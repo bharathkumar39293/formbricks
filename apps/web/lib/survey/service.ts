@@ -43,6 +43,8 @@ export const selectSurvey = {
   displayLimit: true,
   autoClose: true,
   delay: true,
+  maxSubmissionsPerBrowser: true,
+  maxSubmissionsPerIp: true,
   displayPercentage: true,
   autoComplete: true,
   isVerifyEmailEnabled: true,

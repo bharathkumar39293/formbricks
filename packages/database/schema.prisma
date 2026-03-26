@@ -411,6 +411,9 @@ model Survey {
   customHeadScripts     String?
   customHeadScriptsMode SurveyScriptMode? @default(add)
 
+  maxSubmissionsPerBrowser Int?
+  maxSubmissionsPerIp      Int?
+
   @@index([environmentId, updatedAt])
   @@index([segmentId])
 }

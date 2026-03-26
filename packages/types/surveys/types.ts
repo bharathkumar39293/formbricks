@@ -830,6 +830,8 @@ export const ZSurveyBase = z.object({
   status: ZSurveyStatus,
   displayOption: ZSurveyDisplayOption,
   autoClose: z.number().nullable(),
+  maxSubmissionsPerBrowser: z.number().int().positive().nullable().optional(),
+  maxSubmissionsPerIp: z.number().int().positive().nullable().optional(),
   triggers: z.array(z.object({ actionClass: ZActionClass })),
   recontactDays: z.number().nullable(),
   displayLimit: z.number().nullable(),
