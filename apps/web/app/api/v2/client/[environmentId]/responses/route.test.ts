@@ -10,6 +10,10 @@ const mocks = vi.hoisted(() => ({
   reportApiError: vi.fn(),
   sendToPipeline: vi.fn(),
   validateResponseData: vi.fn(),
+  cache: {
+    get: vi.fn(),
+    set: vi.fn(),
+  },
 }));
 
 vi.mock("@/app/api/v2/client/[environmentId]/responses/lib/utils", () => ({
@@ -49,6 +53,10 @@ vi.mock("@/modules/ee/license-check/lib/utils", () => ({
   getIsContactsEnabled: mocks.getIsContactsEnabled,
 }));
 
+vi.mock("@/lib/cache", () => ({
+  cache: mocks.cache,
+}));
+
 const environmentId = "cld1234567890abcdef123456";
 const surveyId = "clg123456789012345678901234";
 
@@ -67,6 +75,8 @@ describe("api/v2 client responses route", () => {
     mocks.getOrganizationIdFromEnvironmentId.mockResolvedValue("org_123");
     mocks.getIsContactsEnabled.mockResolvedValue(true);
     mocks.getClientIpFromHeaders.mockResolvedValue("127.0.0.1");
+    mocks.cache.get.mockResolvedValue({ ok: true, data: null });
+    mocks.cache.set.mockResolvedValue({ ok: true });
   });
 
   test("reports unexpected response creation failures while keeping the public payload generic", async () => {
@@ -138,6 +148,38 @@ describe("api/v2 client responses route", () => {
       status: 500,
       error: underlyingError,
     });
+    expect(mocks.createResponseWithQuotaEvaluation).not.toHaveBeenCalled();
+    expect(mocks.sendToPipeline).not.toHaveBeenCalled();
+  });
+
+  test("returns cached response immediately on idempotency key hit, skipping generation", async () => {
+    mocks.cache.get.mockResolvedValue({ ok: true, data: "cached-response-123" });
+
+    const request = new Request(`https://api.test/api/v2/client/${environmentId}/responses`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        surveyId,
+        finished: false,
+        data: {},
+        meta: {
+          idempotencyKey: "test-uuid-idempotency",
+        },
+      }),
+    });
+
+    const { POST } = await import("./route");
+    const response = await POST(request, {
+      params: Promise.resolve({ environmentId }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      data: { id: "cached-response-123" },
+    });
+    expect(mocks.cache.get).toHaveBeenCalledWith(`idempotency:${surveyId}:test-uuid-idempotency`);
     expect(mocks.createResponseWithQuotaEvaluation).not.toHaveBeenCalled();
     expect(mocks.sendToPipeline).not.toHaveBeenCalled();
   });

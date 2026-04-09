@@ -8,6 +8,7 @@ import { parseAndValidateJsonBody } from "@/app/lib/api/parse-and-validate-json-
 import { responses } from "@/app/lib/api/response";
 import { transformErrorToDetails } from "@/app/lib/api/validator";
 import { sendToPipeline } from "@/app/lib/pipelines";
+import { cache } from "@/lib/cache";
 import { getSurvey } from "@/lib/survey/service";
 import { getElementsFromBlocks } from "@/lib/survey/utils";
 import { getClientIpFromHeaders } from "@/lib/utils/client-ip";
@@ -162,6 +163,7 @@ const createResponseForRequest = async ({
       },
       country,
       action: responseInputData?.meta?.action,
+      idempotencyKey: responseInputData?.meta?.idempotencyKey,
     };
 
     if (survey.isCaptureIpEnabled) {
@@ -206,6 +208,17 @@ export const POST = async (request: Request, context: Context): Promise<Response
   }
 
   const { environmentId, responseInputData } = validatedInput;
+
+  const idempotencyKey = responseInputData.meta?.idempotencyKey;
+  if (idempotencyKey) {
+    const cachedResponseId = await cache.get<string>(
+      `idempotency:${responseInputData.surveyId}:${idempotencyKey}`
+    );
+    if (cachedResponseId.ok && cachedResponseId.data) {
+      return responses.successResponse({ id: cachedResponseId.data }, true);
+    }
+  }
+
   const country = getCountry(request.headers);
 
   try {
@@ -237,6 +250,11 @@ export const POST = async (request: Request, context: Context): Promise<Response
       return createdResponse;
     }
     const { quotaFull, ...responseData } = createdResponse;
+
+    if (idempotencyKey) {
+      // 24 hour TTL (86400000ms)
+      await cache.set(`idempotency:${responseData.surveyId}:${idempotencyKey}`, responseData.id, 86400000);
+    }
 
     sendToPipeline({
       event: "responseCreated",

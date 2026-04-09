@@ -304,6 +304,7 @@ export type TResponseFilterCriteria = z.infer<typeof ZResponseFilterCriteria>;
 export const ZResponseMeta = z.object({
   source: z.string().optional(),
   url: z.string().optional(),
+  idempotencyKey: z.string().optional(),
   userAgent: z
     .object({
       browser: z.string().optional(),
@@ -357,6 +358,7 @@ export const ZResponseInput = z.object({
     .object({
       source: z.string().optional(),
       url: z.string().optional(),
+      idempotencyKey: z.string().optional(),
       userAgent: z
         .object({
           browser: z.string().optional(),
@@ -407,6 +409,7 @@ export const ZResponseUpdate = z.object({
       url: z.string().optional(),
       source: z.string().optional(),
       action: z.string().optional(),
+      idempotencyKey: z.string().optional(),
     })
     .optional(),
   hiddenFields: ZResponseHiddenFieldValue.optional(),

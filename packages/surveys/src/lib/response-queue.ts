@@ -23,6 +23,12 @@ export const delay = (ms: number): Promise<void> => {
   });
 };
 
+const generateIdempotencyKey = () => {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 export class ResponseQueue {
   readonly queue: TResponseUpdate[] = [];
   readonly config: QueueConfig;
@@ -45,6 +51,13 @@ export class ResponseQueue {
   }
 
   add(responseUpdate: TResponseUpdate) {
+    if (!responseUpdate.meta) {
+      responseUpdate.meta = {};
+    }
+    if (!responseUpdate.meta.idempotencyKey) {
+      responseUpdate.meta.idempotencyKey = generateIdempotencyKey();
+    }
+
     // update survey state
     this.surveyState.accumulateResponse(responseUpdate);
     if (this.config.setSurveyState) {
