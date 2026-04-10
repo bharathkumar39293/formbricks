@@ -38,6 +38,8 @@ export const createCacheKey = {
   // Response-related keys
   response: {
     countBySurveyId: (surveyId: string): CacheKey => makeCacheKey("response", surveyId, "count"),
+    idempotency: (surveyId: string, idempotencyKey: string): CacheKey =>
+      makeCacheKey("response", surveyId, "idempotency", idempotencyKey),
   },
 
   // Rate limiting and security

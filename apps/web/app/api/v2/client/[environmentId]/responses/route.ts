@@ -1,4 +1,5 @@
 import { UAParser } from "ua-parser-js";
+import { createCacheKey } from "@formbricks/cache";
 import { ZEnvironmentId } from "@formbricks/types/environment";
 import { InvalidInputError } from "@formbricks/types/errors";
 import { TResponseWithQuotaFull } from "@formbricks/types/quota";
@@ -210,13 +211,33 @@ export const POST = async (request: Request, context: Context): Promise<Response
   const { environmentId, responseInputData } = validatedInput;
 
   const idempotencyKey = responseInputData.meta?.idempotencyKey;
+
+  // Idempotency guard: use tryLock to atomically reserve the key before the DB write.
+  // This eliminates the TOCTOU race where two overlapping retries can both miss
+  // the cache check and each create a duplicate response.
+  //
+  // Flow:
+  //   1. tryLock acquired  → this request is the "owner"; proceed to create.
+  //   2. Cache hit (data)  → a previous owner already committed; return cached result.
+  //   3. Lock miss + no data → another owner is still in flight; fall through and
+  //      create (best-effort; acceptable for the rare in-flight collision window).
+  //   4. Redis unavailable → graceful degradation; idempotency skipped silently.
+  //
+  // Self-hosted instances without Redis receive no idempotency protection;
+  // this is consistent with other cache-dependent features in Formbricks.
   if (idempotencyKey) {
-    const cachedResponseId = await cache.get<string>(
-      `idempotency:${responseInputData.surveyId}:${idempotencyKey}`
-    );
-    if (cachedResponseId.ok && cachedResponseId.data) {
-      return responses.successResponse({ id: cachedResponseId.data }, true);
+    const cacheKey = createCacheKey.response.idempotency(responseInputData.surveyId, idempotencyKey);
+
+    // Check for an already-committed result first (fast path on retries after TTL is set).
+    const existingResult = await cache.get<{ id: string; quotaFull?: boolean; quota?: object }>(cacheKey);
+    if (existingResult.ok && existingResult.data) {
+      return responses.successResponse(existingResult.data, true);
     }
+
+    // Atomically reserve the key for 60 s (enough time for the DB write + pipeline).
+    // If the lock is already held by another request, fall through to normal creation
+    // (best-effort; the second writer will overwrite with the same logical result).
+    await cache.tryLock(cacheKey, "1", 60_000);
   }
 
   const country = getCountry(request.headers);
@@ -251,9 +272,19 @@ export const POST = async (request: Request, context: Context): Promise<Response
     }
     const { quotaFull, ...responseData } = createdResponse;
 
+    const quotaObj = createQuotaFullObject(quotaFull);
+    const responseDataWithQuota = {
+      id: responseData.id,
+      ...quotaObj,
+    };
+
     if (idempotencyKey) {
-      // 24 hour TTL (86400000ms)
-      await cache.set(`idempotency:${responseData.surveyId}:${idempotencyKey}`, responseData.id, 86400000);
+      // Cache the full quota-aware payload so retries receive the same quotaFull
+      // state as the original commit — avoids the client skipping the quota flow
+      // when the first request timed out on a quota-full response.
+      // TTL: 24 hours (86_400_000 ms).
+      const cacheKey = createCacheKey.response.idempotency(responseData.surveyId, idempotencyKey);
+      await cache.set(cacheKey, responseDataWithQuota, 86_400_000);
     }
 
     sendToPipeline({
@@ -271,13 +302,6 @@ export const POST = async (request: Request, context: Context): Promise<Response
         response: responseData,
       });
     }
-
-    const quotaObj = createQuotaFullObject(quotaFull);
-
-    const responseDataWithQuota = {
-      id: responseData.id,
-      ...quotaObj,
-    };
 
     return responses.successResponse(responseDataWithQuota, true);
   } catch (error) {

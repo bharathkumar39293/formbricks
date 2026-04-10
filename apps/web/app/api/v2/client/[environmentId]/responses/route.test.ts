@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   cache: {
     get: vi.fn(),
     set: vi.fn(),
+    tryLock: vi.fn(),
   },
 }));
 
@@ -57,6 +58,14 @@ vi.mock("@/lib/cache", () => ({
   cache: mocks.cache,
 }));
 
+vi.mock("@formbricks/cache", () => ({
+  createCacheKey: {
+    response: {
+      idempotency: (surveyId: string, key: string) => `fb:response:${surveyId}:idempotency:${key}`,
+    },
+  },
+}));
+
 const environmentId = "cld1234567890abcdef123456";
 const surveyId = "clg123456789012345678901234";
 
@@ -77,6 +86,7 @@ describe("api/v2 client responses route", () => {
     mocks.getClientIpFromHeaders.mockResolvedValue("127.0.0.1");
     mocks.cache.get.mockResolvedValue({ ok: true, data: null });
     mocks.cache.set.mockResolvedValue({ ok: true });
+    mocks.cache.tryLock.mockResolvedValue({ ok: true, data: true });
   });
 
   test("reports unexpected response creation failures while keeping the public payload generic", async () => {
@@ -153,7 +163,7 @@ describe("api/v2 client responses route", () => {
   });
 
   test("returns cached response immediately on idempotency key hit, skipping generation", async () => {
-    mocks.cache.get.mockResolvedValue({ ok: true, data: "cached-response-123" });
+    mocks.cache.get.mockResolvedValue({ ok: true, data: { id: "cached-response-123" } });
 
     const request = new Request(`https://api.test/api/v2/client/${environmentId}/responses`, {
       method: "POST",
@@ -179,7 +189,8 @@ describe("api/v2 client responses route", () => {
     expect(await response.json()).toEqual({
       data: { id: "cached-response-123" },
     });
-    expect(mocks.cache.get).toHaveBeenCalledWith(`idempotency:${surveyId}:test-uuid-idempotency`);
+    // cache.get called with the structured key (not a raw template string)
+    expect(mocks.cache.get).toHaveBeenCalledWith(`fb:response:${surveyId}:idempotency:test-uuid-idempotency`);
     expect(mocks.createResponseWithQuotaEvaluation).not.toHaveBeenCalled();
     expect(mocks.sendToPipeline).not.toHaveBeenCalled();
   });
