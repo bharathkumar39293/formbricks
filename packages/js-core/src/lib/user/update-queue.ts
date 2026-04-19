@@ -101,10 +101,12 @@ export class UpdateQueue {
 
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = null;
     }
 
     const flushPromise = new Promise<void>((resolve, reject) => {
       const handler = async (): Promise<void> => {
+        this.debounceTimeout = null;
         try {
           let currentUpdates = { ...this.updates };
           const config = Config.getInstance();
@@ -176,9 +178,32 @@ export class UpdateQueue {
             }
           }
 
-          this.clearUpdates();
+          if (this.updates) {
+            const sentAttributes = currentUpdates.attributes ?? {};
+            const remainingAttributes: TAttributes = {};
+
+            for (const [key, value] of Object.entries(this.updates.attributes ?? {})) {
+              if (!(key in sentAttributes) || sentAttributes[key] !== value) {
+                remainingAttributes[key] = value as string | number | boolean;
+              }
+            }
+
+            if (Object.keys(remainingAttributes).length > 0) {
+              this.updates = {
+                ...this.updates,
+                attributes: remainingAttributes,
+              };
+            } else {
+              this.updates = null;
+            }
+          }
+
           this.pendingFlush = null;
           resolve();
+
+          if (this.updates) {
+            void this.processUpdates();
+          }
         } catch (error: unknown) {
           this.pendingFlush = null;
           logger.error(
