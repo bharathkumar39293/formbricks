@@ -109,6 +109,9 @@ export class UpdateQueue {
         this.debounceTimeout = null;
         try {
           let currentUpdates = { ...this.updates };
+          // Capture original attributes BEFORE any in-handler mutation (e.g., language stripping)
+          // This ensures the cleanup diff correctly represents what was sent vs what arrived concurrently
+          const originalAttributes = { ...(this.updates?.attributes ?? {}) };
           const config = Config.getInstance();
 
           if (Object.keys(currentUpdates).length > 0) {
@@ -180,7 +183,9 @@ export class UpdateQueue {
 
           if (this.updates) {
             const sentUserId = currentUpdates.userId;
-            const sentAttributes = currentUpdates.attributes ?? {};
+            // Use originalAttributes (pre-mutation) so locally-handled attributes
+            // (e.g., language applied to config) are correctly treated as "sent"
+            const sentAttributes = originalAttributes;
 
             const remainingAttributes: TAttributes = {};
             for (const [key, value] of Object.entries(this.updates.attributes ?? {})) {
@@ -203,11 +208,14 @@ export class UpdateQueue {
           }
 
           this.pendingFlush = null;
-          resolve();
 
+          // Await follow-up flush BEFORE resolving so that callers of await processUpdates()
+          // and waitForPendingWork() see a fully drained queue, not an intermediate state
           if (this.updates) {
-            void this.processUpdates();
+            await this.processUpdates();
           }
+
+          resolve();
         } catch (error: unknown) {
           this.pendingFlush = null;
           logger.error(

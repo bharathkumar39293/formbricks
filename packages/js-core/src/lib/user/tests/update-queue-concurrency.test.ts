@@ -14,6 +14,7 @@ vi.mock("@/lib/common/config", () => ({
           },
         },
       })),
+      update: vi.fn(), // required for language-handling code path in processUpdates
     })),
   },
 }));
@@ -76,15 +77,10 @@ describe("UpdateQueue Concurrency (Bug Reproduction)", () => {
     // 6. Wait for the flush to complete
     await flushPromise;
 
-    // 7. ASSERTION: The queue should NOT be empty.
-    // It should contain the updates that arrived during the flight.
-    const remainingUpdates = updateQueue.getUpdates();
-
-    expect(remainingUpdates).not.toBeNull();
-    expect(remainingUpdates?.attributes).toEqual({
-      biz: "baz",
-      foo: "new-bar",
-    });
+    // 7. ASSERTION: flushPromise now resolves only after all chained flushes complete.
+    // The follow-up flush will have sent the concurrent updates and drained the queue.
+    expect(sendUpdates).toHaveBeenCalledTimes(2);
+    expect(updateQueue.getUpdates()).toBeNull();
   });
 
   test("preserves userId update during in-flight flush without attributes", async () => {
@@ -109,8 +105,13 @@ describe("UpdateQueue Concurrency (Bug Reproduction)", () => {
     resolveRequest!({ ok: true, data: { hasWarnings: false } });
     await flushPromise;
 
-    // 5. ASSERTION: "B" must not be lost to cleanup
-    // If this.updates were wiped unconditionally, userId "B" would be permanently lost.
-    expect(updateQueue.getUpdates()?.userId).toBe("B");
+    // 5. ASSERTION: flushPromise resolves only after the follow-up flush sends userId=B.
+    // Verify two sends happened: first with A, second with B.
+    expect(sendUpdates).toHaveBeenCalledTimes(2);
+    expect(sendUpdates).toHaveBeenLastCalledWith({
+      updates: { userId: "B", attributes: {} },
+    });
+    // Queue must be fully drained — nothing silently dropped, nothing silently stuck.
+    expect(updateQueue.getUpdates()).toBeNull();
   });
 });
