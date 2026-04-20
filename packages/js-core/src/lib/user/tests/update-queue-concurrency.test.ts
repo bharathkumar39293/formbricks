@@ -86,4 +86,31 @@ describe("UpdateQueue Concurrency (Bug Reproduction)", () => {
       foo: "new-bar",
     });
   });
+
+  test("preserves userId update during in-flight flush without attributes", async () => {
+    let resolveRequest: (value: any) => void;
+    const sendPromise = new Promise((resolve) => {
+      resolveRequest = resolve;
+    });
+
+    (sendUpdates as any).mockReturnValue(sendPromise);
+
+    // 1. Start flush with userId = "A"
+    updateQueue.updateUserId("A");
+    const flushPromise = updateQueue.processUpdates();
+
+    // 2. Advance past debounce so sendUpdates is called
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    // 3. Change userId to "B" during in-flight request — no new attributes
+    updateQueue.updateUserId("B");
+
+    // 4. Resolve the network request
+    resolveRequest!({ ok: true, data: { hasWarnings: false } });
+    await flushPromise;
+
+    // 5. ASSERTION: "B" must not be lost to cleanup
+    // If this.updates were wiped unconditionally, userId "B" would be permanently lost.
+    expect(updateQueue.getUpdates()?.userId).toBe("B");
+  });
 });

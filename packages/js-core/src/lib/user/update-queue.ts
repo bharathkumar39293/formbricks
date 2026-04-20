@@ -179,22 +179,26 @@ export class UpdateQueue {
           }
 
           if (this.updates) {
+            const sentUserId = currentUpdates.userId;
             const sentAttributes = currentUpdates.attributes ?? {};
-            const remainingAttributes: TAttributes = {};
 
+            const remainingAttributes: TAttributes = {};
             for (const [key, value] of Object.entries(this.updates.attributes ?? {})) {
               if (!(key in sentAttributes) || sentAttributes[key] !== value) {
                 remainingAttributes[key] = value as string | number | boolean;
               }
             }
 
-            if (Object.keys(remainingAttributes).length > 0) {
+            // Preserve updates if attributes changed OR if userId changed during the flush
+            const userIdChanged = this.updates.userId != null && this.updates.userId !== sentUserId;
+
+            if (Object.keys(remainingAttributes).length > 0 || userIdChanged) {
               this.updates = {
-                ...this.updates,
+                userId: this.updates.userId,
                 attributes: remainingAttributes,
               };
             } else {
-              this.updates = null;
+              this.clearUpdates();
             }
           }
 
