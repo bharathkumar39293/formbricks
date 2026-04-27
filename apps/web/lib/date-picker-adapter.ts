@@ -46,7 +46,11 @@ export const datePickerAdapter = {
       if (!v) return null;
       const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:T|$)/);
       if (m) {
-        const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+        const year = Number(m[1]);
+        const month = Number(m[2]) - 1;
+        const date = Number(m[3]);
+        const d = new Date(Date.UTC(year, month, date));
+        if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month || d.getUTCDate() !== date) return null;
         return isNaN(d.getTime()) ? null : d;
       }
       return null;
