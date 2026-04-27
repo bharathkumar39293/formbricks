@@ -500,6 +500,10 @@
     "you_will_be_downgraded_to_the_community_edition_on_date": "Du wirst am {date} auf die Community Edition herabgestuft.",
     "your_license_has_expired_please_renew": "Your enterprise license has expired. Please renew it to continue using enterprise features."
   },
+  "common.date_picker.clear_date": "Clear date",
+  "common.date_picker.end_time": "End Time",
+  "common.date_picker.pick_a_date": "Pick a date",
+  "common.date_picker.start_time": "Start Time",
   "emails": {
     "accept": "Annehmen",
     "click_or_drag_to_upload_files": "Klicke oder ziehe, um Dateien hochzuladen.",

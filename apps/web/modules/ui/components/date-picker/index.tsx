@@ -3,8 +3,10 @@
 import { Calendar as CalendarIcon, Clock, X } from "lucide-react";
 import React, { useMemo } from "react";
 import { DateRange } from "react-day-picker";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { DatePickerMode, datePickerAdapter } from "@/lib/date-picker-adapter";
+import { formatDateForDisplay } from "@/lib/utils/datetime";
 import { Button } from "@/modules/ui/components/button";
 import { Calendar } from "@/modules/ui/components/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/modules/ui/components/popover";
@@ -33,10 +35,12 @@ export const UnifiedDatePicker = ({
   mode,
   selectionMode,
   includeTime = false,
-  placeholder = "Pick a date",
+  placeholder,
   className,
   disabled,
 }: UnifiedDatePickerProps) => {
+  const { t, i18n } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("common.date_picker.pick_a_date");
   // 1. Current value from parent
   const parsedValue = useMemo(() => datePickerAdapter.parse(value), [value]);
 
@@ -103,15 +107,16 @@ export const UnifiedDatePicker = ({
   };
 
   const formattedLabel = useMemo(() => {
-    if (!internalValue) return placeholder;
+    const locale = i18n.resolvedLanguage ?? "en-US";
+    if (!internalValue) return resolvedPlaceholder;
     if (internalValue instanceof Date) {
-      return internalValue.toLocaleDateString();
+      return formatDateForDisplay(internalValue, locale);
     }
     const { from, to } = internalValue;
-    if (from && !to) return `${from.toLocaleDateString()} - ...`;
-    if (from && to) return `${from.toLocaleDateString()} - ${to.toLocaleDateString()}`;
-    return placeholder;
-  }, [internalValue, placeholder]);
+    if (from && !to) return `${formatDateForDisplay(from, locale)} - ...`;
+    if (from && to) return `${formatDateForDisplay(from, locale)} - ${formatDateForDisplay(to, locale)}`;
+    return resolvedPlaceholder;
+  }, [internalValue, resolvedPlaceholder, i18n.resolvedLanguage]);
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -126,13 +131,15 @@ export const UnifiedDatePicker = ({
             <CalendarIcon className="mr-2 h-4 w-4" />
             {formattedLabel}
             {internalValue && (
-              <X
-                className="ml-auto h-4 w-4 opacity-50 hover:opacity-100"
+              <button
+                aria-label={t("common.date_picker.clear_date")}
+                className="focus:ring-ring ml-auto flex h-4 w-4 items-center justify-center rounded opacity-50 hover:opacity-100 focus:outline-none focus:ring-2"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSelect(null);
-                }}
-              />
+                }}>
+                <X className="h-4 w-4" />
+              </button>
             )}
           </Button>
         </PopoverTrigger>
@@ -147,13 +154,13 @@ export const UnifiedDatePicker = ({
           {includeTime && internalValue && (
             <div className="mt-4 space-y-4 border-t pt-4">
               <TimeInputGroup
-                label="Start Time"
+                label={t("common.date_picker.start_time")}
                 date={internalValue instanceof Date ? internalValue : internalValue.from}
                 onChange={(p, v) => handleTimeChange("from", p, v)}
               />
               {actualSelectionMode === "range" && (
                 <TimeInputGroup
-                  label="End Time"
+                  label={t("common.date_picker.end_time")}
                   date={internalValue instanceof Date ? undefined : internalValue.to}
                   onChange={(p, v) => handleTimeChange("to", p, v)}
                 />

@@ -500,6 +500,10 @@
     "you_will_be_downgraded_to_the_community_edition_on_date": "Vissza lesz állítva a közösségi kiadásra ekkor: {date}.",
     "your_license_has_expired_please_renew": "A vállalati licence lejárt. Újítsa meg, hogy továbbra is használhassa a vállalati funkciókat."
   },
+  "common.date_picker.clear_date": "Clear date",
+  "common.date_picker.end_time": "End Time",
+  "common.date_picker.pick_a_date": "Pick a date",
+  "common.date_picker.start_time": "Start Time",
   "emails": {
     "accept": "Elfogadás",
     "click_or_drag_to_upload_files": "Kattintson vagy húzza ide a fájlok feltöltéséhez.",
