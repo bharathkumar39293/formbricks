@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ALLOWED_FILE_EXTENSIONS, TAllowedFileExtension } from "@formbricks/types/storage";
 import { TSurveyElement } from "@formbricks/types/surveys/elements";
 import { TValidationRule, TValidationRuleType } from "@formbricks/types/surveys/validation-rules";
+import { UnifiedDatePicker } from "@/modules/ui/components/date-picker";
 import { Input } from "@/modules/ui/components/input";
 import { MultiSelect } from "@/modules/ui/components/multi-select";
 import {
@@ -50,29 +51,7 @@ export const ValidationRuleValueInput = ({
   // Special handling for date range inputs
   if (ruleType === "isBetween" || ruleType === "isNotBetween") {
     return (
-      <div className="flex w-full items-center gap-2">
-        <Input
-          type="date"
-          value={(currentValue as string)?.split(",")?.[0] ?? ""}
-          onChange={(e) => {
-            const currentEndDate = (currentValue as string)?.split(",")?.[1] ?? "";
-            onChange(`${e.target.value},${currentEndDate}`);
-          }}
-          placeholder={t("environments.surveys.edit.validation.start_date")}
-          className="h-9 flex-1 bg-white"
-        />
-        <span className="text-sm text-slate-500">{t("common.and")}</span>
-        <Input
-          type="date"
-          value={(currentValue as string)?.split(",")?.[1] ?? ""}
-          onChange={(e) => {
-            const currentStartDate = (currentValue as string)?.split(",")?.[0] ?? "";
-            onChange(`${currentStartDate},${e.target.value}`);
-          }}
-          placeholder={t("environments.surveys.edit.validation.end_date")}
-          className="h-9 flex-1 bg-white"
-        />
-      </div>
+      <UnifiedDatePicker value={currentValue} onChange={onChange} mode="survey-legacy" className="w-full" />
     );
   }
 
@@ -119,6 +98,17 @@ export const ValidationRuleValueInput = ({
         onChange={onFileExtensionChange}
         placeholder={t("environments.surveys.edit.validation.select_file_extensions")}
         disabled={false}
+      />
+    );
+  }
+
+  if (htmlInputType === "date") {
+    return (
+      <UnifiedDatePicker
+        value={currentValue}
+        onChange={onChange}
+        mode="survey-legacy"
+        className="h-9 min-w-[80px]"
       />
     );
   }

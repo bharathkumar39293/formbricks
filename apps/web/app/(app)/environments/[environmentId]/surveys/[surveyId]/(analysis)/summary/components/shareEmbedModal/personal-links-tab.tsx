@@ -9,7 +9,7 @@ import { TSegment } from "@formbricks/types/segment";
 import { DocumentationLinks } from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/(analysis)/summary/components/shareEmbedModal/documentation-links";
 import { getFormattedErrorMessage } from "@/lib/utils/helper";
 import { Button } from "@/modules/ui/components/button";
-import { DatePicker } from "@/modules/ui/components/date-picker";
+import { UnifiedDatePicker } from "@/modules/ui/components/date-picker";
 import {
   FormControl,
   FormDescription,
@@ -40,33 +40,6 @@ interface PersonalLinksFormData {
   selectedSegment: string;
   expiryDate: Date | null;
 }
-
-// Custom DatePicker component with date restrictions
-const RestrictedDatePicker = ({
-  date,
-  updateSurveyDate,
-}: {
-  date: Date | null;
-  updateSurveyDate: (date: Date | null) => void;
-}) => {
-  // Get tomorrow's date
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-
-  const handleDateUpdate = (date: Date) => {
-    updateSurveyDate(date);
-  };
-
-  return (
-    <DatePicker
-      date={date}
-      updateSurveyDate={handleDateUpdate}
-      minDate={tomorrow}
-      onClearDate={() => updateSurveyDate(null)}
-    />
-  );
-};
 
 export const PersonalLinksTab = ({
   environmentId,
@@ -231,7 +204,12 @@ export const PersonalLinksTab = ({
               <FormItem>
                 <FormLabel>{t("environments.surveys.share.personal_links.expiry_date_optional")}</FormLabel>
                 <FormControl>
-                  <RestrictedDatePicker date={field.value} updateSurveyDate={field.onChange} />
+                  <UnifiedDatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    mode="analysis"
+                    disabled={{ before: new Date(new Date().setHours(24, 0, 0, 0)) }}
+                  />
                 </FormControl>
                 <FormDescription>
                   {t("environments.surveys.share.personal_links.expiry_date_description")}

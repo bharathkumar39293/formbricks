@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { TDateOperator, TSegmentFilterValue, TTimeUnit } from "@formbricks/types/segment";
 import { cn } from "@/lib/cn";
 import { toUTCDateString } from "@/modules/ee/contacts/segments/lib/date-utils";
+import { UnifiedDatePicker } from "@/modules/ui/components/date-picker";
 import { Input } from "@/modules/ui/components/input";
 import {
   Select,
@@ -72,46 +73,17 @@ export function DateFilterValue({ operator, value, onChange, viewOnly }: DateFil
 
   // Between operator: needs two date inputs
   if (operator === "isBetween") {
-    const betweenValue = Array.isArray(value) && value.length === 2 ? value : ["", ""];
-
-    return (
-      <div className="flex items-center gap-2">
-        <Input
-          type="date"
-          className="h-9 w-auto bg-white"
-          disabled={viewOnly}
-          value={betweenValue[0] ? betweenValue[0].split("T")[0] : ""}
-          onChange={(e) => {
-            onChange([toUTCDateString(e.target.value), betweenValue[1]]);
-          }}
-        />
-        <span className="text-sm text-slate-600">{t("common.and")}</span>
-        <Input
-          type="date"
-          className="h-9 w-auto bg-white"
-          disabled={viewOnly}
-          value={betweenValue[1] ? betweenValue[1].split("T")[0] : ""}
-          onChange={(e) => {
-            onChange([betweenValue[0], toUTCDateString(e.target.value)]);
-          }}
-        />
-      </div>
-    );
+    return <UnifiedDatePicker value={value} onChange={onChange} mode="segment-range" className="w-auto" />;
   }
 
   // Absolute date operators: isBefore, isAfter, isSameDay
   // Use a single date picker
-  const dateValue = typeof value === "string" ? value : "";
-
   return (
-    <Input
-      type="date"
-      className="h-9 w-auto bg-white"
-      disabled={viewOnly}
-      value={dateValue ? dateValue.split("T")[0] : ""}
-      onChange={(e) => {
-        onChange(toUTCDateString(e.target.value));
-      }}
+    <UnifiedDatePicker
+      value={typeof value === "string" ? value : ""}
+      onChange={onChange}
+      mode="contact-iso"
+      className="w-auto"
     />
   );
 }

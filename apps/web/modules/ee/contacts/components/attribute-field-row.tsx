@@ -3,6 +3,7 @@
 import { CalendarIcon, HashIcon, TagIcon, TrashIcon } from "lucide-react";
 import { TContactAttributeKey } from "@formbricks/types/contact-attribute-key";
 import { Button } from "@/modules/ui/components/button";
+import { UnifiedDatePicker } from "@/modules/ui/components/date-picker";
 import { FormControl, FormError, FormField, FormItem, FormLabel } from "@/modules/ui/components/form";
 import { Input } from "@/modules/ui/components/input";
 import {
@@ -104,14 +105,10 @@ export const AttributeFieldRow = ({
           const renderValueInput = () => {
             if (dataType === "date") {
               return (
-                <Input
-                  type="date"
-                  value={valueField.value ? valueField.value.split("T")[0] : ""}
-                  onChange={(e) => {
-                    const dateValue = e.target.value ? new Date(e.target.value).toISOString() : "";
-                    valueField.onChange(dateValue);
-                  }}
-                  placeholder={t("environments.contacts.attribute_value_placeholder")}
+                <UnifiedDatePicker
+                  value={valueField.value}
+                  onChange={valueField.onChange}
+                  mode="contact-iso"
                   className="w-full"
                 />
               );
