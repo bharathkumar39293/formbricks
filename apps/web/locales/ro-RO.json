@@ -351,7 +351,6 @@
     "person": "Persoană",
     "phone": "Telefon",
     "photo_by": "Fotografie de",
-    "pick_a_date": "Alege o dată",
     "picture": "Poză",
     "placeholder": "Marcaj substituent",
     "please_select_at_least_one_survey": "Vă rugăm să selectați cel puțin un sondaj",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "Șterge regula de validare",
           "does_not_contain": "Nu conține",
           "email": "Este un email valid",
-          "end_date": "Data de sfârșit",
           "file_extension_is": "Extensia fișierului este",
           "file_extension_is_not": "Extensia fișierului nu este",
           "is": "Este",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "Ordonați toate opțiunile",
           "select_file_extensions": "Selectați extensiile de fișiere…",
           "select_option": "Selectează opțiunea",
-          "start_date": "Data de început",
           "url": "Este un URL valid"
         },
         "validation_logic_and": "Toate sunt adevărate",

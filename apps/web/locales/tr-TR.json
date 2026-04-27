@@ -351,7 +351,6 @@
     "person": "Kişi",
     "phone": "Telefon",
     "photo_by": "Fotoğraf:",
-    "pick_a_date": "Tarih seçin",
     "picture": "Resim",
     "placeholder": "Yer tutucu",
     "please_select_at_least_one_survey": "Lütfen en az bir survey seçin",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "Doğrulama kuralını sil",
           "does_not_contain": "İçermez",
           "email": "Geçerli email",
-          "end_date": "Bitiş tarihi",
           "file_extension_is": "Dosya uzantısı şudur",
           "file_extension_is_not": "Dosya uzantısı şu değildir",
           "is": "Is",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "Tüm seçenekleri sırala",
           "select_file_extensions": "Dosya uzantılarını seçin...",
           "select_option": "Seçenek seçin",
-          "start_date": "Başlangıç tarihi",
           "url": "Geçerli URL"
         },
         "validation_logic_and": "Tümü doğru",

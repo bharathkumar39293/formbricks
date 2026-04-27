@@ -351,7 +351,6 @@
     "person": "人員",
     "phone": "電話",
     "photo_by": "照片來源：",
-    "pick_a_date": "選擇日期",
     "picture": "圖片",
     "placeholder": "提示文字",
     "please_select_at_least_one_survey": "請選擇至少一個問卷",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "刪除驗證規則",
           "does_not_contain": "不包含",
           "email": "是有效的電子郵件",
-          "end_date": "結束日期",
           "file_extension_is": "檔案副檔名為",
           "file_extension_is_not": "檔案副檔名不是",
           "is": "等於",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "請為所有選項排序",
           "select_file_extensions": "請選擇檔案副檔名…",
           "select_option": "選擇選項",
-          "start_date": "開始日期",
           "url": "是有效的 URL"
         },
         "validation_logic_and": "全部為真",

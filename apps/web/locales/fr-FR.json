@@ -351,7 +351,6 @@
     "person": "Personne",
     "phone": "Téléphone",
     "photo_by": "Photo par",
-    "pick_a_date": "Choisissez une date",
     "picture": "Photo",
     "placeholder": "Remplaçant",
     "please_select_at_least_one_survey": "Veuillez sélectionner au moins une enquête.",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "Supprimer la règle de validation",
           "does_not_contain": "Ne contient pas",
           "email": "Est un e-mail valide",
-          "end_date": "Date de fin",
           "file_extension_is": "L'extension de fichier est",
           "file_extension_is_not": "L'extension de fichier n'est pas",
           "is": "Est",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "Classer toutes les options",
           "select_file_extensions": "Sélectionner les extensions de fichier…",
           "select_option": "Sélectionner une option",
-          "start_date": "Date de début",
           "url": "Est une URL valide"
         },
         "validation_logic_and": "Toutes sont vraies",

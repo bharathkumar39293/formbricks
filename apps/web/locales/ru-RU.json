@@ -351,7 +351,6 @@
     "person": "Человек",
     "phone": "Телефон",
     "photo_by": "Фото:",
-    "pick_a_date": "Выберите дату",
     "picture": "Изображение",
     "placeholder": "Заполнитель",
     "please_select_at_least_one_survey": "Пожалуйста, выберите хотя бы один опрос",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "Удалить правило проверки",
           "does_not_contain": "Не содержит",
           "email": "Корректный email",
-          "end_date": "Дата окончания",
           "file_extension_is": "Расширение файла —",
           "file_extension_is_not": "Расширение файла не является",
           "is": "Является",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "Ранжируйте все опции",
           "select_file_extensions": "Выберите расширения файлов…",
           "select_option": "Выберите вариант",
-          "start_date": "Дата начала",
           "url": "Корректный URL"
         },
         "validation_logic_and": "Все условия выполняются",

@@ -351,7 +351,6 @@
     "person": "人员",
     "phone": "电话",
     "photo_by": "摄影：",
-    "pick_a_date": "选择 日期",
     "picture": "图片",
     "placeholder": "占位符",
     "please_select_at_least_one_survey": "请选择至少 一个调查",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "删除验证规则",
           "does_not_contain": "不包含",
           "email": "是有效的邮箱地址",
-          "end_date": "结束日期",
           "file_extension_is": "文件扩展名为",
           "file_extension_is_not": "文件扩展名不是",
           "is": "等于",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "对所有选项进行排序",
           "select_file_extensions": "请选择文件扩展名…",
           "select_option": "选择选项",
-          "start_date": "开始日期",
           "url": "是有效的URL"
         },
         "validation_logic_and": "全部为真",

@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/react";
-import { UnifiedDatePicker } from "./unified-date-picker";
+import { UnifiedDatePicker } from "./index";
 
 const meta: Meta<typeof UnifiedDatePicker> = {
   title: "UI/DatePicker",

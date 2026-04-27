@@ -351,7 +351,6 @@
     "person": "Person",
     "phone": "Telefon",
     "photo_by": "Foto av",
-    "pick_a_date": "Välj ett datum",
     "picture": "Bild",
     "placeholder": "Platshållare",
     "please_select_at_least_one_survey": "Vänligen välj minst en enkät",
@@ -1810,7 +1809,6 @@
           "delete_validation_rule": "Ta bort valideringsregel",
           "does_not_contain": "Innehåller inte",
           "email": "Är en giltig e-postadress",
-          "end_date": "Slutdatum",
           "file_extension_is": "Filändelsen är",
           "file_extension_is_not": "Filändelsen är inte",
           "is": "Är",
@@ -1837,7 +1835,6 @@
           "rank_all_options": "Rangordna alla alternativ",
           "select_file_extensions": "Välj filändelser…",
           "select_option": "Välj alternativ",
-          "start_date": "Startdatum",
           "url": "Är en giltig URL"
         },
         "validation_logic_and": "Alla är sanna",
