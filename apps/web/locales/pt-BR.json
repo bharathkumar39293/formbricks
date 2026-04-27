@@ -198,6 +198,12 @@
     "customer_success": "Sucesso do Cliente",
     "dark_overlay": "sobreposição escura",
     "date": "Encontro",
+    "date_picker": {
+      "clear_date": "Clear date",
+      "end_time": "End time",
+      "pick_a_date": "Pick a date",
+      "start_time": "Start time"
+    },
     "days": "dias",
     "default": "Padrão",
     "delete": "Apagar",
@@ -499,10 +505,6 @@
     "you_will_be_downgraded_to_the_community_edition_on_date": "Você será rebaixado para a Edição Comunitária em {date}.",
     "your_license_has_expired_please_renew": "Your enterprise license has expired. Please renew it to continue using enterprise features."
   },
-  "common.date_picker.clear_date": "Clear date",
-  "common.date_picker.end_time": "End Time",
-  "common.date_picker.pick_a_date": "Pick a date",
-  "common.date_picker.start_time": "Start Time",
   "emails": {
     "accept": "Aceitar",
     "click_or_drag_to_upload_files": "Clique ou arraste para fazer o upload de arquivos.",
