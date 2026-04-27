@@ -207,7 +207,8 @@ export const PersonalLinksTab = ({
                   <UnifiedDatePicker
                     value={field.value}
                     onChange={field.onChange}
-                    mode="analysis"
+                    mode="default"
+                    selectionMode="single"
                     disabled={{ before: new Date(new Date().setHours(24, 0, 0, 0)) }}
                   />
                 </FormControl>

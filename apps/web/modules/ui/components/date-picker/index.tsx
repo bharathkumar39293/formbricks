@@ -4,7 +4,7 @@ import { Calendar as CalendarIcon, Clock, X } from "lucide-react";
 import React, { useMemo } from "react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/cn";
-import { DatePickerMode, adaptToMode, normalizeRange, parseUnknown } from "@/lib/date-picker-adapter";
+import { DatePickerMode, datePickerAdapter } from "@/lib/date-picker-adapter";
 import { Button } from "@/modules/ui/components/button";
 import { Calendar } from "@/modules/ui/components/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/modules/ui/components/popover";
@@ -20,6 +20,7 @@ interface UnifiedDatePickerProps {
   value: any;
   onChange: (value: any) => void;
   mode: DatePickerMode;
+  selectionMode?: "single" | "range";
   includeTime?: boolean;
   placeholder?: string;
   className?: string;
@@ -30,13 +31,14 @@ export const UnifiedDatePicker = ({
   value,
   onChange,
   mode,
+  selectionMode,
   includeTime = false,
   placeholder = "Pick a date",
   className,
   disabled,
 }: UnifiedDatePickerProps) => {
   // 1. Current value from parent
-  const parsedValue = useMemo(() => parseUnknown(value), [value]);
+  const parsedValue = useMemo(() => datePickerAdapter.parse(value), [value]);
 
   // 2. Local state for "In-Progress" selections to avoid emitting partials
   const [localSelection, setLocalSelection] = React.useState<Date | DateRange | null>(null);
@@ -49,28 +51,34 @@ export const UnifiedDatePicker = ({
   const internalValue = localSelection;
 
   // 2. Derive selection for react-day-picker
-  const selectionMode =
-    mode === "analysis" || mode === "segment-range" || mode === "survey-legacy" ? "range" : "single";
+  const actualSelectionMode =
+    selectionMode ||
+    (mode === "analysis" || mode === "segment-range" || mode === "survey-legacy" ? "range" : "single");
 
   const handleSelect = (selected: any) => {
     setLocalSelection(selected);
 
     if (!selected) {
-      onChange(adaptToMode(mode, null));
+      onChange(datePickerAdapter.format(mode, null));
       return;
     }
 
     // 3. Normalize selection
-    const normalized = normalizeRange(selected, includeTime);
+    const normalized = datePickerAdapter.parse(selected);
     if (!normalized) return;
 
     // 4. Guard: Don't emit partial ranges for strict modes
-    if ((mode === "segment-range" || mode === "survey-legacy") && normalized.from && !normalized.to) {
+    if (
+      actualSelectionMode === "range" &&
+      (mode === "segment-range" || mode === "survey-legacy") &&
+      normalized.from &&
+      !normalized.to
+    ) {
       return;
     }
 
     // 5. Adapt back to legacy format
-    onChange(adaptToMode(mode, normalized));
+    onChange(datePickerAdapter.format(mode, normalized));
   };
 
   const handleTimeChange = (type: "from" | "to", part: "hour" | "minute", val: string) => {
@@ -89,9 +97,9 @@ export const UnifiedDatePicker = ({
     const newRange = { from: type === "from" ? newDate : from, to: type === "to" ? newDate : to };
 
     // Normalize before adapting!
-    const normalized = normalizeRange(newRange, true);
+    const normalized = datePickerAdapter.parse(newRange);
     setLocalSelection(normalized);
-    onChange(adaptToMode(mode, normalized));
+    if (normalized) onChange(datePickerAdapter.format(mode, normalized));
   };
 
   const formattedLabel = useMemo(() => {
@@ -130,7 +138,7 @@ export const UnifiedDatePicker = ({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-4" align="start">
           <Calendar
-            mode={selectionMode as any}
+            mode={actualSelectionMode as any}
             selected={internalValue as any}
             onSelect={handleSelect}
             initialFocus
@@ -143,7 +151,7 @@ export const UnifiedDatePicker = ({
                 date={internalValue instanceof Date ? internalValue : internalValue.from}
                 onChange={(p, v) => handleTimeChange("from", p, v)}
               />
-              {selectionMode === "range" && (
+              {actualSelectionMode === "range" && (
                 <TimeInputGroup
                   label="End Time"
                   date={internalValue instanceof Date ? undefined : internalValue.to}

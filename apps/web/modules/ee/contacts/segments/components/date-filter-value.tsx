@@ -73,7 +73,15 @@ export function DateFilterValue({ operator, value, onChange, viewOnly }: DateFil
 
   // Between operator: needs two date inputs
   if (operator === "isBetween") {
-    return <UnifiedDatePicker value={value} onChange={onChange} mode="segment-range" className="w-auto" />;
+    return (
+      <UnifiedDatePicker
+        value={value}
+        onChange={onChange}
+        mode="segment-range"
+        className="w-auto"
+        disabled={viewOnly}
+      />
+    );
   }
 
   // Absolute date operators: isBefore, isAfter, isSameDay
@@ -84,6 +92,7 @@ export function DateFilterValue({ operator, value, onChange, viewOnly }: DateFil
       onChange={onChange}
       mode="contact-iso"
       className="w-auto"
+      disabled={viewOnly}
     />
   );
 }

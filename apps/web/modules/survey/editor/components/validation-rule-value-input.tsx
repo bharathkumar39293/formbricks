@@ -108,6 +108,7 @@ export const ValidationRuleValueInput = ({
         value={currentValue}
         onChange={onChange}
         mode="survey-legacy"
+        selectionMode="single"
         className="h-9 min-w-[80px]"
       />
     );
