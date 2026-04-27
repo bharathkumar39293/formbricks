@@ -22,15 +22,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { TSurvey } from "@formbricks/types/surveys/types";
-import {
-  DateRange,
-  useResponseFilter,
-} from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/(analysis)/components/response-filter-context";
+import { useResponseFilter } from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/(analysis)/components/response-filter-context";
 import { getResponsesDownloadUrlAction } from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/actions";
 import { downloadResponsesFile } from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/utils";
 import { getFormattedFilters, getTodayDate } from "@/app/lib/surveys/surveys";
 import { useClickOutside } from "@/lib/utils/hooks/useClickOutside";
 import { UnifiedDatePicker } from "@/modules/ui/components/date-picker";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/modules/ui/components/dropdown-menu";
 import { PopoverTriggerButton, ResponseFilter } from "./ResponseFilter";
 
 enum DateSelected {
