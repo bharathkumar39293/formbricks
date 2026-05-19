@@ -22,15 +22,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { TSurvey } from "@formbricks/types/surveys/types";
-import {
-  DateRange,
-  useResponseFilter,
-} from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/(analysis)/components/response-filter-context";
+import { useResponseFilter } from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/(analysis)/components/response-filter-context";
 import { getResponsesDownloadUrlAction } from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/actions";
 import { downloadResponsesFile } from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/utils";
 import { getFormattedFilters, getTodayDate } from "@/app/lib/surveys/surveys";
-import { useClickOutside } from "@/lib/utils/hooks/useClickOutside";
-import { Calendar } from "@/modules/ui/components/calendar";
+import { DatePicker } from "@/modules/ui/components/date-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,11 +34,6 @@ import {
   DropdownMenuTrigger,
 } from "@/modules/ui/components/dropdown-menu";
 import { PopoverTriggerButton, ResponseFilter } from "./ResponseFilter";
-
-enum DateSelected {
-  FROM = "common.from",
-  TO = "common.to",
-}
 
 enum FilterDownload {
   ALL = "common.all",
@@ -128,16 +119,15 @@ const getDateRangeLabel = (from: Date, to: Date, t: TFunction) => {
 export const CustomFilter = ({ survey }: CustomFilterProps) => {
   const { t } = useTranslation();
   const { selectedFilter, dateRange, setDateRange, resetState } = useResponseFilter();
-  const [filterRange, setFilterRange] = useState(
-    dateRange.from && dateRange.to
-      ? getDateRangeLabel(dateRange.from, dateRange.to, t)
-      : getFilterDropDownLabels(t).ALL_TIME
-  );
-  const [selectingDate, setSelectingDate] = useState<DateSelected>(DateSelected.FROM);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
+  const [showCustomPicker, setShowCustomPicker] = useState<boolean>(() => {
+    if (dateRange.from && dateRange.to) {
+      const label = getDateRangeLabel(dateRange.from, dateRange.to, t);
+      return label === getFilterDropDownLabels(t).CUSTOM_RANGE;
+    }
+    return false;
+  });
   const [isFilterDropDownOpen, setIsFilterDropDownOpen] = useState<boolean>(false);
   const [isDownloadDropDownOpen, setIsDownloadDropDownOpen] = useState<boolean>(false);
-  const [hoveredRange, setHoveredRange] = useState<DateRange | null>(null);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
 
   const firstMountRef = useRef(true);
@@ -162,8 +152,6 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
     [selectedFilter, dateRange]
   );
 
-  const datePickerRef = useRef<HTMLDivElement>(null);
-
   const extractMetadataKeys = useCallback((obj: Record<string, unknown>, parentKey = "") => {
     let keys: string[] = [];
 
@@ -178,67 +166,10 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
     return keys;
   }, []);
 
-  const handleDateHoveredChange = (date: Date) => {
-    if (selectingDate === DateSelected.FROM) {
-      const startOfRange = new Date(date);
-      startOfRange.setHours(0, 0, 0, 0); // Set to the start of the selected day
-
-      // Check if the selected date is after the current 'to' date
-      if (startOfRange > dateRange?.to!) {
-        return;
-      } else {
-        setHoveredRange({ from: startOfRange, to: dateRange.to });
-      }
-    } else {
-      const endOfRange = new Date(date);
-      endOfRange.setHours(23, 59, 59, 999); // Set to the end of the selected day
-
-      // Check if the selected date is before the current 'from' date
-      if (endOfRange < dateRange?.from!) {
-        return;
-      } else {
-        setHoveredRange({ from: dateRange.from, to: endOfRange });
-      }
-    }
-  };
-
-  const handleDateChange = (date: Date) => {
-    if (selectingDate === DateSelected.FROM) {
-      const startOfRange = new Date(date);
-      startOfRange.setHours(0, 0, 0, 0); // Set to the start of the selected day
-
-      // Check if the selected date is after the current 'to' date
-      if (startOfRange > dateRange?.to!) {
-        const nextDay = new Date(startOfRange);
-        nextDay.setDate(nextDay.getDate() + 1);
-        nextDay.setHours(23, 59, 59, 999);
-        setDateRange({ from: startOfRange, to: nextDay });
-      } else {
-        setDateRange((prevData) => ({ from: startOfRange, to: prevData.to }));
-      }
-      setSelectingDate(DateSelected.TO);
-    } else {
-      const endOfRange = new Date(date);
-      endOfRange.setHours(23, 59, 59, 999); // Set to the end of the selected day
-
-      // Check if the selected date is before the current 'from' date
-      if (endOfRange < dateRange?.from!) {
-        const previousDay = new Date(endOfRange);
-        previousDay.setDate(previousDay.getDate() - 1);
-        previousDay.setHours(0, 0, 0, 0); // Set to the start of the selected day
-        setDateRange({ from: previousDay, to: endOfRange });
-      } else {
-        setDateRange((prevData) => ({ from: prevData?.from, to: endOfRange }));
-      }
-      setIsDatePickerOpen(false);
-      setSelectingDate(DateSelected.FROM);
-    }
-  };
-
-  const handleDatePickerClose = () => {
-    setIsDatePickerOpen(false);
-    setSelectingDate(DateSelected.FROM);
-  };
+  const filterRangeLabel = useMemo(() => {
+    if (!dateRange.from || !dateRange.to) return getFilterDropDownLabels(t).ALL_TIME;
+    return getDateRangeLabel(dateRange.from, dateRange.to, t);
+  }, [dateRange.from, dateRange.to, t]);
 
   const handleDownloadResponses = async (filter: FilterDownload, fileType: "csv" | "xlsx") => {
     try {
@@ -268,57 +199,49 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
     }
   };
 
-  useClickOutside(datePickerRef, () => handleDatePickerClose());
   return (
     <div className="relative flex justify-between">
       <div className="flex justify-stretch gap-x-1.5">
         <ResponseFilter survey={survey} />
         <DropdownMenu
           onOpenChange={(value) => {
-            value && handleDatePickerClose();
             setIsFilterDropDownOpen(value);
           }}>
           <DropdownMenuTrigger asChild>
-            <PopoverTriggerButton isOpen={isFilterDropDownOpen}>
-              {filterRange === getFilterDropDownLabels(t).CUSTOM_RANGE
-                ? `${dateRange?.from ? format(dateRange?.from, "dd LLL") : "Select first date"} - ${
-                    dateRange?.to ? format(dateRange.to, "dd LLL") : "Select last date"
-                  }`
-                : filterRange}
-            </PopoverTriggerButton>
+            <PopoverTriggerButton isOpen={isFilterDropDownOpen}>{filterRangeLabel}</PopoverTriggerButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).ALL_TIME);
+                setShowCustomPicker(false);
                 setDateRange({ from: undefined, to: getTodayDate() });
               }}>
               <p className="text-slate-700">{getFilterDropDownLabels(t).ALL_TIME}</p>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).LAST_7_DAYS);
+                setShowCustomPicker(false);
                 setDateRange({ from: startOfDay(subDays(new Date(), 7)), to: getTodayDate() });
               }}>
               <p className="text-slate-700">{getFilterDropDownLabels(t).LAST_7_DAYS}</p>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).LAST_30_DAYS);
+                setShowCustomPicker(false);
                 setDateRange({ from: startOfDay(subDays(new Date(), 30)), to: getTodayDate() });
               }}>
               <p className="text-slate-700">{getFilterDropDownLabels(t).LAST_30_DAYS}</p>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).THIS_MONTH);
+                setShowCustomPicker(false);
                 setDateRange({ from: startOfMonth(new Date()), to: getTodayDate() });
               }}>
               <p className="text-slate-700">{getFilterDropDownLabels(t).THIS_MONTH}</p>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).LAST_MONTH);
+                setShowCustomPicker(false);
                 setDateRange({
                   from: startOfMonth(subMonths(new Date(), 1)),
                   to: endOfMonth(subMonths(getTodayDate(), 1)),
@@ -328,14 +251,14 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).THIS_QUARTER);
+                setShowCustomPicker(false);
                 setDateRange({ from: startOfQuarter(new Date()), to: endOfQuarter(getTodayDate()) });
               }}>
               <p className="text-slate-700">{getFilterDropDownLabels(t).THIS_QUARTER}</p>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).LAST_QUARTER);
+                setShowCustomPicker(false);
                 setDateRange({
                   from: startOfQuarter(subQuarters(new Date(), 1)),
                   to: endOfQuarter(subQuarters(getTodayDate(), 1)),
@@ -345,7 +268,7 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).LAST_6_MONTHS);
+                setShowCustomPicker(false);
                 setDateRange({
                   from: startOfMonth(subMonths(new Date(), 6)),
                   to: endOfMonth(getTodayDate()),
@@ -355,14 +278,14 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).THIS_YEAR);
+                setShowCustomPicker(false);
                 setDateRange({ from: startOfYear(new Date()), to: endOfYear(getTodayDate()) });
               }}>
               <p className="text-slate-700">{getFilterDropDownLabels(t).THIS_YEAR}</p>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setFilterRange(getFilterDropDownLabels(t).LAST_YEAR);
+                setShowCustomPicker(false);
                 setDateRange({
                   from: startOfYear(subYears(new Date(), 1)),
                   to: endOfYear(subYears(getTodayDate(), 1)),
@@ -372,17 +295,31 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setIsDatePickerOpen(true);
-                setFilterRange(getFilterDropDownLabels(t).CUSTOM_RANGE);
-                setSelectingDate(DateSelected.FROM);
+                setShowCustomPicker(true);
               }}>
               <p className="text-sm text-slate-700 hover:ring-0">{getFilterDropDownLabels(t).CUSTOM_RANGE}</p>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {showCustomPicker && (
+          <DatePicker
+            mode="analysis"
+            value={dateRange.from && dateRange.to ? { from: dateRange.from, to: dateRange.to } : undefined}
+            onChange={(range) => {
+              if (range.from && range.to) {
+                setDateRange({ from: range.from, to: range.to });
+              }
+            }}
+            onClearDate={() => {
+              setShowCustomPicker(false);
+              setDateRange({ from: undefined, to: getTodayDate() });
+            }}
+          />
+        )}
+
         <DropdownMenu
           onOpenChange={(value) => {
-            value && handleDatePickerClose();
             setIsDownloadDropDownOpen(value);
           }}>
           <DropdownMenuTrigger asChild>
@@ -426,23 +363,6 @@ export const CustomFilter = ({ survey }: CustomFilterProps) => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {isDatePickerOpen && (
-        <div ref={datePickerRef} className="absolute top-full z-50 my-2 rounded-md border bg-white">
-          <Calendar
-            autoFocus
-            mode="range"
-            defaultMonth={dateRange?.from}
-            selected={hoveredRange || dateRange}
-            numberOfMonths={2}
-            onDayClick={(date) => handleDateChange(date)}
-            onDayMouseEnter={handleDateHoveredChange}
-            onDayMouseLeave={() => setHoveredRange(null)}
-            classNames={{
-              day_today: "hover:bg-slate-200 bg-white",
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 };
