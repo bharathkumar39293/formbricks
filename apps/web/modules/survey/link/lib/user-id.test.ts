@@ -20,6 +20,12 @@ describe("getUserIdFromSearchParams", () => {
     expect(getUserIdFromSearchParams(searchParams)).toBeUndefined();
   });
 
+  test("skips empty userId values and returns the next non-empty match", () => {
+    const searchParams = new URLSearchParams("userId=&userId=from-second-value");
+
+    expect(getUserIdFromSearchParams(searchParams)).toBe("from-second-value");
+  });
+
   test("returns undefined when no userId parameter exists", () => {
     const searchParams = new URLSearchParams("source=email");
 
@@ -42,5 +48,9 @@ describe("hasUserIdSearchParam", () => {
 
   test("returns false when the userId parameter is empty", () => {
     expect(hasUserIdSearchParam(new URLSearchParams("userId="))).toBe(false);
+  });
+
+  test("returns true when an empty userId is followed by a non-empty one", () => {
+    expect(hasUserIdSearchParam(new URLSearchParams("userId=&userId=abc"))).toBe(true);
   });
 });

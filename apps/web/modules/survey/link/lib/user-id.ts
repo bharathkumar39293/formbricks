@@ -26,7 +26,10 @@ function* getSearchParamEntries(searchParams: TUserIdSearchParams): Generator<[s
 export const getUserIdFromSearchParams = (searchParams: TUserIdSearchParams): string | undefined => {
   for (const [key, value] of getSearchParamEntries(searchParams)) {
     if (key.toLowerCase() === "userid") {
-      return value === "" ? undefined : value;
+      if (value === "") {
+        continue;
+      }
+      return value;
     }
   }
 
