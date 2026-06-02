@@ -166,13 +166,13 @@ export function AddFilterModal({
     {
       id: "attributes",
       label: t("workspace.segments.person_and_attributes"),
-      icon: <TagIcon className="h-4 w-4" />,
+      icon: <TagIcon className="size-4" />,
     },
-    { id: "segments", label: t("common.segments"), icon: <Users2Icon className="h-4 w-4" /> },
+    { id: "segments", label: t("common.segments"), icon: <Users2Icon className="size-4" /> },
     {
       id: "devices",
       label: t("workspace.segments.devices"),
-      icon: <MonitorSmartphoneIcon className="h-4 w-4" />,
+      icon: <MonitorSmartphoneIcon className="size-4" />,
     },
   ];
 
@@ -296,7 +296,7 @@ export function AddFilterModal({
               <FilterButton
                 key={personAttribute.id}
                 data-testid={`filter-btn-person-${personAttribute.id}`}
-                icon={<FingerprintIcon className="h-4 w-4" />}
+                icon={<FingerprintIcon className="size-4" />}
                 label={personAttribute.label}
                 onClick={() => {
                   handleAddFilter({
@@ -322,7 +322,7 @@ export function AddFilterModal({
               <FilterButton
                 key={segment.id}
                 data-testid={`filter-btn-segment-${segment.id}`}
-                icon={<Users2Icon className="h-4 w-4" />}
+                icon={<Users2Icon className="size-4" />}
                 label={segment.title}
                 onClick={() => {
                   handleAddFilter({
@@ -350,7 +350,7 @@ export function AddFilterModal({
               <FilterButton
                 key={deviceType.id}
                 data-testid={`filter-btn-device-${deviceType.id}`}
-                icon={<MonitorSmartphoneIcon className="h-4 w-4" />}
+                icon={<MonitorSmartphoneIcon className="size-4" />}
                 label={deviceType.name}
                 onClick={() => {
                   handleAddFilter({
@@ -404,7 +404,7 @@ export function AddFilterModal({
             <FilterButton
               key={segment.id}
               data-testid={`filter-btn-segment-${segment.id}`}
-              icon={<Users2Icon className="h-4 w-4" />}
+              icon={<Users2Icon className="size-4" />}
               label={segment.title}
               onClick={() => {
                 handleAddFilter({
@@ -438,7 +438,7 @@ export function AddFilterModal({
           <FilterButton
             key={deviceType.id}
             data-testid={`filter-btn-device-${deviceType.id}`}
-            icon={<MonitorSmartphoneIcon className="h-4 w-4" />}
+            icon={<MonitorSmartphoneIcon className="size-4" />}
             label={deviceType.name}
             onClick={() => {
               handleAddFilter({
@@ -465,7 +465,7 @@ export function AddFilterModal({
     );
   };
 
-  const TabContent = (): JSX.Element => {
+  const getTabContent = (): JSX.Element => {
     switch (activeTabId) {
       case "all": {
         return getAllTabContent();
@@ -505,9 +505,7 @@ export function AddFilterModal({
               <TabBar activeId={activeTabId} className="bg-white" setActiveId={setActiveTabId} tabs={tabs} />
             </div>
 
-            <div className={cn("mt-2 flex flex-col gap-1 overflow-y-auto")}>
-              <TabContent />
-            </div>
+            <div className={cn("mt-2 flex flex-col gap-1 overflow-y-auto")}>{getTabContent()}</div>
           </div>
         </DialogBody>
       </DialogContent>
