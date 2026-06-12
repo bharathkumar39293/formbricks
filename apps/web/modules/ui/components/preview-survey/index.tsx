@@ -1,10 +1,10 @@
 "use client";
 
-import { Workspace } from "@prisma/client";
 import { MotionConfig, motion } from "framer-motion";
 import { ExpandIcon, GlobeIcon, MonitorIcon, ShrinkIcon, SmartphoneIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Workspace } from "@formbricks/database/prisma-browser";
 import { getLanguageLabel } from "@formbricks/i18n-utils/src/utils";
 import { TSurvey, TSurveyLanguage, TSurveyStyling } from "@formbricks/types/surveys/types";
 import { TUserLocale } from "@formbricks/types/user";
@@ -289,7 +289,12 @@ export const PreviewSurvey = ({
                   <div className="flex h-full w-full flex-col justify-center px-1">
                     <div className="absolute left-5 top-5">
                       {!styling.isLogoHidden && (
-                        <ClientLogo workspaceLogo={workspace.logo} surveyLogo={styling.logo} previewSurvey />
+                        <ClientLogo
+                          workspaceLogo={workspace.logo}
+                          workspaceId={workspace.id}
+                          surveyLogo={styling.logo}
+                          previewSurvey
+                        />
                       )}
                     </div>
                     <div className="z-10 w-full rounded-lg border border-transparent">
@@ -403,7 +408,12 @@ export const PreviewSurvey = ({
                   isEditorView>
                   <div className="absolute left-5 top-5">
                     {!styling.isLogoHidden && (
-                      <ClientLogo workspaceLogo={workspace.logo} surveyLogo={styling.logo} previewSurvey />
+                      <ClientLogo
+                        workspaceLogo={workspace.logo}
+                        workspaceId={workspace.id}
+                        surveyLogo={styling.logo}
+                        previewSurvey
+                      />
                     )}
                   </div>
                   <div className="z-0 w-full max-w-4xl rounded-lg border-transparent">

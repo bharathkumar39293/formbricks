@@ -1,7 +1,7 @@
 "use client";
 
-import { Workspace } from "@prisma/client";
 import { useTranslation } from "react-i18next";
+import { Workspace } from "@formbricks/database/prisma-browser";
 import { TTemplate, TTemplateFilter } from "@formbricks/types/templates";
 import { cn } from "@/lib/cn";
 import { replacePresetPlaceholders } from "@/lib/utils/templates";
@@ -30,10 +30,10 @@ export const Template = ({
   loading,
   selectedFilter,
   noPreview,
-}: TemplateProps) => {
+}: Readonly<TemplateProps>) => {
   const { t } = useTranslation();
 
-  const showCreateSurveyButton = activeTemplate?.name === template.name;
+  const showCreateSurveyButton = activeTemplate?.id === template.id;
 
   const handleCardClick = () => {
     const newTemplate = replacePresetPlaceholders(template, workspace);
@@ -74,7 +74,7 @@ export const Template = ({
   }
 
   return (
-    <button type="button" className={cardClass} onClick={handleCardClick} key={template.name}>
+    <button type="button" className={cardClass} onClick={handleCardClick}>
       {cardContent}
     </button>
   );

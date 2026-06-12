@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import { test } from "./lib/fixtures";
+import { createSurveyFromScratch } from "./utils/helper";
 
 test.describe("Survey Styling", async () => {
   // Shared Helpers
@@ -281,7 +282,7 @@ test.describe("Survey Styling", async () => {
     const css = await page.evaluate(() => document.getElementById("formbricks__css__custom")?.innerHTML);
     expect(css).toBeDefined();
 
-    // On initial load (no saved styling), button and progress bar should derive from brand color (#64748b)
+    // On initial load (no saved styling), button and progress bar should derive from brand color (#1e40af)
     // NOT from the old hardcoded dark navy (#0f172a)
     expect(css).not.toContain("--fb-button-bg-color: #0f172a");
     expect(css).not.toContain("--fb-progress-indicator-bg-color: #0f172a");
@@ -305,10 +306,7 @@ test.describe("Survey Styling", async () => {
     await user.login();
     await page.waitForURL(/\/workspaces\/[^/]+\/surveys/);
 
-    // Create a new survey
-    await page.getByText("Start from scratch").click();
-    await page.getByRole("button", { name: "Create survey", exact: true }).click();
-    await page.waitForURL(/\/workspaces\/[^/]+\/surveys\/[^/]+\/edit$/);
+    await createSurveyFromScratch(page);
 
     // Ensure Welcome Card is active so we can see it
     await page.locator("p", { hasText: "Welcome card" }).first().click({ force: true });

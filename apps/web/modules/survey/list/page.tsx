@@ -6,6 +6,7 @@ import { getPublicDomain } from "@/lib/getPublicUrl";
 import { getBillingFallbackPath } from "@/lib/membership/navigation";
 import { getUserLocale } from "@/lib/user/service";
 import { getTranslate } from "@/lingodotdev/server";
+import { getSurveyAIAvailability } from "@/modules/survey/lib/get-survey-ai-availability";
 import { getWorkspaceWithTeamIds } from "@/modules/survey/lib/workspace";
 import { SurveysList } from "@/modules/survey/list/components/survey-list";
 import { getWorkspaceAuth } from "@/modules/workspaces/lib/utils";
@@ -39,6 +40,9 @@ export const SurveysPage = async ({ params: paramsProps }: SurveyTemplateProps) 
 
   const currentWorkspaceChannel = workspace.config.channel ?? null;
   const locale = (await getUserLocale(session.user.id)) ?? DEFAULT_LOCALE;
+  const { isAIAvailable, aiUnavailableReason } = await getSurveyAIAvailability(workspace.organizationId, {
+    isReadOnly,
+  });
   const workspaceWithRequiredProps = {
     ...workspace,
     brandColor: workspace.styling?.brandColor?.light ?? null,
@@ -50,10 +54,11 @@ export const SurveysPage = async ({ params: paramsProps }: SurveyTemplateProps) 
       workspace={workspaceWithRequiredProps}
       isReadOnly={isReadOnly}
       publicDomain={publicDomain}
-      userId={session.user.id}
       surveysPerPage={SURVEYS_PER_PAGE}
       currentWorkspaceChannel={currentWorkspaceChannel}
       locale={locale}
+      isAIAvailable={isAIAvailable}
+      aiUnavailableReason={aiUnavailableReason}
     />
   );
 };

@@ -11,10 +11,12 @@ import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import { getOrganizationIdFromWorkspaceId } from "@/lib/utils/helper";
 import { getWorkspace } from "@/lib/workspace/service";
+import { CLOUD_STRIPE_FEATURE_LOOKUP_KEYS } from "@/modules/billing/lib/stripe-catalog";
 import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
 import { createCustomerPortalSession } from "@/modules/ee/billing/api/lib/create-customer-portal-session";
 import { createSetupCheckoutSession } from "@/modules/ee/billing/api/lib/create-setup-checkout-session";
 import {
+  addOptimisticBillingFeature,
   createPaidPlanCheckoutSession,
   createProTrialSubscription,
   ensureCloudStripeSetupForOrganization,
@@ -146,6 +148,8 @@ export const retryStripeSetupAction = authenticatedActionClient
 
 const ZCreateTrialPaymentCheckoutAction = z.object({
   workspaceId: ZId,
+  targetPlan: z.enum(["pro", "scale"]).optional(),
+  targetInterval: ZCloudBillingInterval.optional(),
 });
 
 export const createTrialPaymentCheckoutAction = authenticatedActionClient
@@ -184,14 +188,30 @@ export const createTrialPaymentCheckoutAction = authenticatedActionClient
         throw new ResourceNotFoundError("workspace", parsedInput.workspaceId);
       }
       const returnUrl = `${WEBAPP_URL}/workspaces/${workspace.id}/settings/organization/billing`;
+      const upgradeIntent =
+        parsedInput.targetPlan !== undefined
+          ? {
+              targetPlan: parsedInput.targetPlan,
+              targetInterval: parsedInput.targetInterval ?? "monthly",
+            }
+          : undefined;
       const checkoutUrl = await createSetupCheckoutSession(
         organization.billing.stripeCustomerId,
         subscriptionId,
         returnUrl,
-        organizationId
+        organizationId,
+        upgradeIntent
       );
 
-      ctx.auditLoggingCtx.newObject = { setupCheckoutCreated: true };
+      ctx.auditLoggingCtx.newObject = {
+        setupCheckoutCreated: true,
+        ...(upgradeIntent
+          ? {
+              targetPlan: upgradeIntent.targetPlan,
+              targetInterval: upgradeIntent.targetInterval,
+            }
+          : {}),
+      };
       return checkoutUrl;
     })
   );
@@ -270,6 +290,13 @@ export const startProTrialAction = authenticatedActionClient
     await createProTrialSubscription(parsedInput.organizationId, customerId);
     await reconcileCloudStripeSubscriptionsForOrganization(parsedInput.organizationId);
     await syncOrganizationBillingFromStripe(parsedInput.organizationId);
+    // Optimistically grant ai-smart-tools so the onboarding survey page sees it
+    // on the very next render, even if Stripe's entitlements API hasn't yet
+    // surfaced it. The customer.subscription.created webhook will reconcile.
+    await addOptimisticBillingFeature(
+      parsedInput.organizationId,
+      CLOUD_STRIPE_FEATURE_LOOKUP_KEYS.AI_SMART_TOOLS
+    );
 
     capturePostHogEvent(
       ctx.user.id,

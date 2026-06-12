@@ -1,8 +1,8 @@
 "use client";
 
-import { Workspace } from "@prisma/client";
 import { PlusCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Workspace } from "@formbricks/database/prisma-browser";
 import { TTemplate } from "@formbricks/types/templates";
 import { customSurveyTemplate } from "@/app/lib/templates";
 import { cn } from "@/lib/cn";
@@ -27,10 +27,10 @@ export const StartFromScratchTemplate = ({
   createSurvey,
   loading,
   noPreview,
-}: StartFromScratchTemplateProps) => {
+}: Readonly<StartFromScratchTemplateProps>) => {
   const { t } = useTranslation();
   const customSurvey = customSurveyTemplate(t);
-  const showCreateSurveyButton = activeTemplate?.name === customSurvey.name;
+  const showCreateSurveyButton = activeTemplate?.id === customSurvey.id;
 
   const handleCardClick = () => {
     if (noPreview) {

@@ -1,6 +1,6 @@
-import { SurveyType, Workspace } from "@prisma/client";
 import { type JSX, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SurveyType, Workspace } from "@formbricks/database/prisma-browser";
 import { TSurveyStyling } from "@formbricks/types/surveys/types";
 import { TWorkspaceStyling } from "@formbricks/types/workspace";
 import { cn } from "@/lib/cn";
@@ -13,6 +13,7 @@ import { ResetProgressButton } from "@/modules/ui/components/reset-progress-butt
 interface LinkSurveyWrapperProps {
   children: JSX.Element;
   workspace: Pick<Workspace, "styling" | "logo" | "linkSurveyBranding">;
+  workspaceId: string;
   isWelcomeCardEnabled: boolean;
   surveyId: string;
   surveyType: SurveyType;
@@ -32,6 +33,7 @@ interface LinkSurveyWrapperProps {
 export const LinkSurveyWrapper = ({
   children,
   workspace,
+  workspaceId,
   isWelcomeCardEnabled,
   surveyType,
   surveyId,
@@ -86,7 +88,12 @@ export const LinkSurveyWrapper = ({
           onBackgroundLoaded={handleBackgroundLoaded}>
           <div className="flex max-h-dvh min-h-dvh items-center justify-center overflow-clip">
             {!styling.isLogoHidden && (workspace.logo?.url || styling.logo?.url) && (
-              <ClientLogo workspaceLogo={workspace.logo} surveyLogo={styling.logo} dir={dir} />
+              <ClientLogo
+                workspaceLogo={workspace.logo}
+                workspaceId={workspaceId}
+                surveyLogo={styling.logo}
+                dir={dir}
+              />
             )}
             <div className="h-full w-full max-w-4xl space-y-6 px-1.5">
               {isPreview && (

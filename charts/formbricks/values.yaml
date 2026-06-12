@@ -99,6 +99,13 @@ deployment:
   # Cube is bundled by default (see the `cube` section below). To use an external Cube cluster instead,
   # set `cube.enabled: false` and provide CUBEJS_API_URL / CUBEJS_API_SECRET here via deployment.env or envFrom.
   # When bundled Cube is enabled, CUBEJS_API_URL is rendered automatically unless set here.
+  # For self-hosted Qwen/vLLM AI, set only the OpenAI-compatible variables you need, for example:
+  # AI_PROVIDER: openai-compatible
+  # AI_MODEL: qwen3-14b-awq
+  # AI_OPENAI_COMPATIBLE_BASE_URL: http://vllm:8000/v1
+  # AI_OPENAI_COMPATIBLE_PROVIDER_NAME: vllm
+  # AI_OPENAI_COMPATIBLE_SUPPORTS_STRUCTURED_OUTPUTS: "1"
+  # Secret values can use valueFrom.secretKeyRef; omit unused provider variables.
   env: {}
 
   # Tolerations for scheduling pods on tainted nodes
@@ -673,10 +680,10 @@ hub:
     # Pinned by digest for immutable, reproducible deployments. When digest is set it takes
     # precedence over tag, and deployment, init container, and migration job all resolve to the
     # same immutable image. Update on each Hub release.
-    # Current digest corresponds to ghcr.io/formbricks/hub:0.4.0.
-    digest: "sha256:3971dd15fcce22d438ac916266ed72176052460a2bd91808e0995e894faba5bc"
+    # Current digest corresponds to ghcr.io/formbricks/hub:0.5.0.
+    digest: "sha256:7d8633cfa0bfa8becc8ff6596fc707333cd3b11f1284dbacb3d4cbe80a86a436"
     # Tag is a fallback for dev/non-prod when digest is cleared; keep aligned with the digest above.
-    tag: "0.4.0"
+    tag: "0.5.0"
     pullPolicy: IfNotPresent
 
   # Optional override for the secret Hub reads from.
