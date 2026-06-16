@@ -20,16 +20,16 @@ export const setUserId = async (userId: string): Promise<Result<void, ApiErrorRe
     return okVoid();
   }
 
-  // If a different userId is set, clean up the previous user state first
-  if (currentUserId) {
-    logger.debug("Different userId is being set, cleaning up previous user state");
-    tearDown();
-  }
-
   const MAX_USER_ID_LENGTH = 255;
   if (userId.length > MAX_USER_ID_LENGTH) {
     logger.error(`UserId exceeds maximum length of ${String(MAX_USER_ID_LENGTH)} characters`);
     return okVoid();
+  }
+
+  // If a different userId is set, clean up the previous user state first
+  if (currentUserId) {
+    logger.debug("Different userId is being set, cleaning up previous user state");
+    tearDown();
   }
 
   updateQueue.updateUserId(userId);
