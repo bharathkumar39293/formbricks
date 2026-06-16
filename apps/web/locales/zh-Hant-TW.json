@@ -1565,6 +1565,7 @@
         "ai_not_available": "AI 圖表生成功能目前無法使用。",
         "ai_not_enabled": "此組織已停用 AI 智慧工具。",
         "ai_not_in_plan": "你目前的方案不包含 AI 圖表生成功能。",
+        "ai_prompt_could_not_be_converted": "我們無法將該提示轉換為圖表。請嘗試使用具體指標、維度或日期範圍重新表述。",
         "ai_query_placeholder": "例如：上週有多少用戶註冊？",
         "ai_query_section_description": "描述你想看到的內容，讓 AI 幫你建立圖表。",
         "ai_query_section_title": "詢問你的數據",
@@ -1763,7 +1764,7 @@
       "manage_feedback_sources": "Manage feedback sources",
       "no_feedback_records_message": "你目前還沒有可報告的回饋記錄。請設定回饋來源以將資料傳送到系統中。",
       "no_feedback_records_with_sources_message": "No feedback records yet. Records will appear here once your feedback sources start sending data.",
-      "setup_feedback_source": "設定反饋源"
+      "setup_feedback_source": "設定意見回饋來源"
     },
     "api_keys": {
       "add_api_key": "新增 API 金鑰",
