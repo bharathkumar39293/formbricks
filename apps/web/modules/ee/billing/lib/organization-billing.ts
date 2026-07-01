@@ -14,7 +14,6 @@ import {
 } from "@formbricks/types/organizations";
 import { cache } from "@/lib/cache";
 import { IS_FORMBRICKS_CLOUD, WEBAPP_URL } from "@/lib/constants";
-import { getWorkspace } from "@/lib/workspace/service";
 import {
   type TStandardCloudPlan,
   getCatalogItemForPlan,
@@ -553,7 +552,6 @@ export const createProTrialSubscription = async (
 export const createPaidPlanCheckoutSession = async (input: {
   organizationId: string;
   customerId: string;
-  workspaceId: string;
   plan: Exclude<TStandardCloudPlan, "hobby">;
   interval: TCloudBillingInterval;
 }): Promise<string> => {
@@ -573,10 +571,6 @@ export const createPaidPlanCheckoutSession = async (input: {
   }
 
   const items = await getCatalogItemsForPlan(input.plan, input.interval);
-  const workspace = await getWorkspace(input.workspaceId);
-  if (!workspace) {
-    throw new ResourceNotFoundError("workspace", input.workspaceId);
-  }
   const session = await stripeClient.checkout.sessions.create({
     mode: "subscription",
     customer: input.customerId,
@@ -591,8 +585,8 @@ export const createPaidPlanCheckoutSession = async (input: {
       address: "auto",
       name: "auto",
     },
-    success_url: `${WEBAPP_URL}/billing-confirmation?workspaceId=${input.workspaceId}&checkout_success=1`,
-    cancel_url: `${WEBAPP_URL}/workspaces/${workspace.id}/settings/organization/billing`,
+    success_url: `${WEBAPP_URL}/billing-confirmation?organizationId=${input.organizationId}&checkout_success=1`,
+    cancel_url: `${WEBAPP_URL}/organizations/${input.organizationId}/settings/billing`,
     metadata: {
       organizationId: input.organizationId,
       targetPlan: input.plan,
@@ -922,6 +916,36 @@ export const switchOrganizationToCloudPlan = async (input: {
     input.targetInterval
   );
   return { mode: "scheduled", pendingChange };
+};
+
+// Previews the invoice an immediate in-place upgrade would generate; mirrors updateSubscriptionItemsImmediately so the amount matches the real charge (estimate — final invoice is authoritative).
+export const previewImmediateUpgradeCharge = async (input: {
+  organizationId: string;
+  customerId: string;
+  targetPlan: Exclude<TStandardCloudPlan, "hobby">;
+  targetInterval: TCloudBillingInterval;
+}): Promise<{ amountDue: number; currency: string } | null> => {
+  if (!stripeClient) {
+    return null;
+  }
+
+  const subscription = await getRequiredActiveSubscription(input.organizationId, input.customerId);
+  const targetItems = await getCatalogItemsForPlan(input.targetPlan, input.targetInterval);
+  const existingDeletions = subscription.items.data.map((item) => ({
+    id: item.id,
+    deleted: true as const,
+  }));
+
+  const preview = await stripeClient.invoices.createPreview({
+    customer: input.customerId,
+    subscription: subscription.id,
+    subscription_details: {
+      items: [...existingDeletions, ...targetItems],
+      proration_behavior: "always_invoice",
+    },
+  });
+
+  return { amountDue: preview.amount_due, currency: preview.currency };
 };
 
 export const undoPendingOrganizationPlanChange = async (

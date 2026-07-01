@@ -47,8 +47,6 @@ interface SignupFormProps {
   isSsoEnabled: boolean;
   samlSsoEnabled: boolean;
   isTurnstileConfigured: boolean;
-  samlTenant: string;
-  samlProduct: string;
   turnstileSiteKey?: string;
   isFormbricksCloud: boolean;
 }
@@ -69,8 +67,6 @@ export const SignupForm = ({
   isSsoEnabled,
   samlSsoEnabled,
   isTurnstileConfigured,
-  samlTenant,
-  samlProduct,
   turnstileSiteKey,
   isFormbricksCloud,
 }: SignupFormProps) => {
@@ -224,7 +220,7 @@ export const SignupForm = ({
                               placeholder="*******"
                               aria-placeholder="password"
                               required
-                              className="block w-full rounded-md shadow-sm focus:border-brand-dark focus:ring-brand-dark sm:text-sm"
+                              className="block w-full rounded-md shadow-xs focus:border-brand-dark focus:ring-brand-dark sm:text-sm"
                             />
                             {error?.message && <FormError className="text-left">{error.message}</FormError>}
                           </div>
@@ -312,8 +308,6 @@ export const SignupForm = ({
           oidcOAuthEnabled={oidcOAuthEnabled}
           oidcDisplayName={oidcDisplayName}
           samlSsoEnabled={samlSsoEnabled}
-          samlTenant={samlTenant}
-          samlProduct={samlProduct}
           returnToUrl={returnToUrl}
           source="signup"
         />
